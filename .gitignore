@@ -1,0 +1,22 @@
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Thumbnail files
+._*
+
+# Finder metadata
+.Spotlight-V100
+.Trashes
+
+# App build stuff (if using Xcode/SwiftUI)
+build/
+DerivedData/
+xcuserdata/
+*.xcworkspace
+
+# Misc
+*.log
+*.swp
+*.dmg
