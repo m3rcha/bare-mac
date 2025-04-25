@@ -1,35 +1,99 @@
-# Baremac
+<p align="center">
+  <img src="https://i.imgur.com/oLtk0Cx.png" width="160" alt="BareMac Logo"/>
+</p>
 
-Baremac is a minimal macOS tweak utility built with SwiftUI. It provides an easy-to-use interface for applying system tweaks instantly, without manual Terminal commands.
+<h1 align="center">BareMac</h1>
+<p align="center">A minimal and modular macOS tweak utility built with SwiftUI. Fast. Focused. Terminal-inspired.</p>
 
-## 🚀 Features
+---
 
-- **Modern SwiftUI UI**: Polished splash screen, searchable sidebar, and card-style tweak rows.
-- **Instant Apply/Revert**: Click a tweak to apply or revert it immediately—no extra buttons required.
-- **Categorized Tweaks**: Organized into Finder, Dock, System, and Screenshot sections.
-- **Smooth Animations**: Subtle transitions between screens and categories.
-- **Data-Driven**: All tweak definitions live in `TweaksData.swift` for easy editing and extension.
+## 🚀 What is BareMac?
 
-## ✅ Usage
+**BareMac** is a lightweight macOS utility that allows users to toggle system-level tweaks instantly, through a simple graphical interface.  
+It aims to provide a clean, modern, and modular SwiftUI experience for power users who want more control over macOS behaviors — without touching Terminal.
 
-- On launch, review the splash screen information and click **Get Started**.
-- Use the **Search** field in the sidebar to filter tweaks by name or description.
-- Click on any tweak card to toggle it on or off; changes apply immediately.
+This version (v0.2) focuses entirely on UI/UX polish, modularization, and performance-oriented view rendering.
 
-## ✨ Available Tweak Categories
+---
 
-- **Finder**: Show hidden files, prevent .DS_Store on network volumes, show full path in title bar, enable QuickLook text selection.
-- **Dock**: Auto-hide with no delay, disable Mission Control animation, enable 2D Dock, single-app mode.
-- **System**: Disable window animations, suppress Gatekeeper warnings, disable auto-correct.
-- **Screenshot**: Change format to JPG, set custom screenshot location.
+## 🎯 Features
 
-## 🚧 Known Limitations
+- Organized tweaks under sections
+- **Live toggle system**: no apply button, commands run instantly via `zsh`
+- **Search bar** with live filtering and terminal-style aesthetics
+- Fully **modular SwiftUI file structure**
+- **Graphite-inspired theme** (`#1f1f1e`) and monospaced typography
 
-- Many tweaks come from older macOS versions and may not function correctly in v0.1.
-- Some tweaks (Finder/Dock restarts) may require additional system permissions.
-- Settings do not persist beyond the current session.
+> **Note:** Most tweaks are placeholders or visual mockups.  
+> Core functionality will be expanded in future versions.
+
+---
+
+## 🧠 Technical Overview
+
+- SwiftUI-first architecture with MVVM-style separation
+- All toggle commands are handled using:
+  
+  ```swift
+  Process().launchPath = "/bin/zsh"
+  Process().arguments = ["-c", tweak.command]
+  ```
+
+- Reversible tweaks (with `revertCommand`) supported
+- Toggle changes are instant and stateless (no persistent preferences yet)
+- Built-in `.toastText` system provides lightweight visual feedback
+- Sidebar state and selected category managed with `@State` and `@Binding`
+- View files include:
+
+```text
+🔹 ContentView.swift      // Root logic, main layout and toggle logic
+🔹 SidebarView.swift      // Search bar + category sidebar
+🔹 TweakRow.swift         // Individual tweak toggle component
+🔹 TweaksData.swift       // Tweak definitions, commands, categories
+🔹 IntroView.swift        // Launch screen with transition binding
+```
+
+---
+
+## ⚙️ Requirements
+
+- macOS **Ventura or newer**
+- Xcode 14 or newer
+- Swift 5.7+
+- Full Disk Access (for some tweaks to apply properly)
+
+---
+
+## 🧪 Limitations (v0.2)
+
+- No tweak persistence — all toggles reset on relaunch
+- Some system commands may silently fail without permissions
+- No error handling or logs (yet)
+- Not notarized — Gatekeeper will warn on first launch
+- Many tweaks are currently non-functional or deprecated on newer macOS
+
+---
+
+## 📆 Installation
+
+- Download the `.dmg` file from the [Releases](https://github.com/m3rcha/bare-mac/releases) page
+- Drag **BareMac.app** into your Applications folder
+- Launch the app, and **grant Full Disk Access** via System Settings if required
+
+---
 
 ## 📄 License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the **MIT License**.  
+
+---
+
+## 💬 Contributing
+
+Pull requests are welcome!  
+You can submit new tweak ideas, better error handling, or UI suggestions — all are appreciated.
+
+---
+
+## 🖤 Stay Terminal. Stay Minimal.
 
