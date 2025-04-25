@@ -1,45 +1,5 @@
 import SwiftUI
 
-// MARK: - TweakRow View
-
-struct TweakRow: View {
-    @Binding var tweak: Tweak
-
-    var body: some View {
-        Button(action: {
-            withAnimation(.spring()) {
-                tweak.isSelected.toggle()
-                let task = Process()
-                task.standardOutput = FileHandle.nullDevice
-                task.standardError = FileHandle.nullDevice
-                task.launchPath = "/bin/zsh"
-                task.arguments = ["-c", tweak.isSelected ? tweak.command : tweak.revertCommand]
-                try? task.run()
-            }
-        }) {
-            HStack(spacing: 12) {
-                Image(systemName: tweak.isSelected ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 20))
-                    .foregroundColor(tweak.isSelected ? .accentColor : .secondary)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(tweak.name)
-                        .font(.headline)
-                    Text(tweak.description)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                Spacer()
-            }
-            .padding()
-            .background(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(Color(nsColor: .controlBackgroundColor).opacity(0.1))
-            )
-        }
-        .buttonStyle(PlainButtonStyle())
-    }
-}
-
 // MARK: - ContentView
 
 struct ContentView: View {
@@ -47,89 +7,99 @@ struct ContentView: View {
     @State private var selectedCategoryIndex = 0
     @State private var searchText = ""
     @State private var categories = defaultCategories
+    @State private var toastText: String? = nil
+    @FocusState private var isSearchFocused: Bool
 
-    // MARK: Intro View
-
-    var introView: some View {
-        VStack(spacing: 20) {
-            Image("BaremacLogo")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 140, height: 140)
-            Text("Baremac")
-                .font(.system(size: 32, weight: .bold, design: .rounded))
-                .foregroundColor(.accentColor)
-            Text("Version 0.2")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-            Text("Developed by Mercha")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-            Text("A minimal macOS tweak utility built with SwiftUI.")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 40)
-            Button("Get Started") {
-                withAnimation(.easeInOut) {
-                    showIntro = false
-                }
+    private func binding(for tweak: Tweak) -> Binding<Tweak>? {
+        for catIndex in categories.indices {
+            if let tweakIndex = categories[catIndex].tweaks.firstIndex(where: { $0.id == tweak.id }) {
+                return $categories[catIndex].tweaks[tweakIndex]
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding()
-        .background(Color(nsColor: .windowBackgroundColor))
+        return nil
     }
 
     // MARK: Main View
 
     var mainView: some View {
         NavigationSplitView {
-            VStack(spacing: 12) {
-                TextField("Search tweaks…", text: $searchText)
-                    .textFieldStyle(.roundedBorder)
-                    .padding(.horizontal)
-                    .padding(.bottom, 8)
-                List(selection: $selectedCategoryIndex) {
-                    ForEach(categories.indices, id: \.self) { idx in
-                        Text(categories[idx].name)
-                            .tag(idx)
-                            .font(.system(size: 15, weight: .medium, design: .rounded))
-                    }
-                }
-                .listStyle(SidebarListStyle())
-            }
-            .frame(minWidth: 200)
+            SidebarView(
+                searchText: $searchText,
+                selectedCategoryIndex: $selectedCategoryIndex,
+                isSearchFocused: _isSearchFocused,
+                categories: categories,
+                showIntro: $showIntro
+            )
         } detail: {
+            let filteredTweaks: [Tweak] =
+                (searchText.isEmpty && isSearchFocused) || !searchText.isEmpty
+                ? categories.flatMap { $0.tweaks }
+                    .filter {
+                        searchText.isEmpty ||
+                        $0.name.lowercased().contains(searchText.lowercased()) ||
+                        $0.description.lowercased().contains(searchText.lowercased())
+                    }
+                : categories[selectedCategoryIndex].tweaks
+
+            let headerTitle: String = (searchText.isEmpty && isSearchFocused) || !searchText.isEmpty
+                ? "Search Results"
+                : categories[selectedCategoryIndex].name
+
             ScrollView {
                 Section(
-                    header: Text(categories[selectedCategoryIndex].name)
-                        .font(.system(size: 24, weight: .bold, design: .rounded)),
-                    footer: Text("Applied tweaks take effect immediately.")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    header: Text(headerTitle)
+                        .font(.system(size: 34, weight: .black, design: .rounded))
+                        .foregroundColor(.primary)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.top, 16),
+                    footer: filteredTweaks.isEmpty ? nil :
+                        Text("Applied tweaks take effect immediately.")
+                        .font(.system(.caption, design: .monospaced))
+                        .opacity(0.6)
                 ) {
-                    // filter and display rows
-                    ForEach(categories[selectedCategoryIndex].tweaks.indices.filter { i in
-                        searchText.isEmpty ||
-                        categories[selectedCategoryIndex].tweaks[i].name
-                            .lowercased().contains(searchText.lowercased()) ||
-                        categories[selectedCategoryIndex].tweaks[i].description
-                            .lowercased().contains(searchText.lowercased())
-                    }, id: \.self) { idx in
-                        TweakRow(tweak: $categories[selectedCategoryIndex].tweaks[idx])
+                    VStack(spacing: 6) {
+                        ForEach(filteredTweaks.indices, id: \.self) { idx in
+                            if let binding = binding(for: filteredTweaks[idx]) {
+                                TweakRow(tweak: binding) { message in
+                                    withAnimation {
+                                        toastText = message
+                                    }
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                        withAnimation {
+                                            toastText = nil
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
+                }
+                .padding(.bottom, 12)
+                .id(searchText)
+                .transition(.opacity)
+
+                if filteredTweaks.isEmpty {
+                    VStack(spacing: 8) {
+                        Image(systemName: "magnifyingglass")
+                            .font(.system(size: 40))
+                            .foregroundColor(.gray)
+                        Text("No tweaks found.")
+                            .font(.title3)
+                            .foregroundColor(.secondary)
+                        Text("Try a different keyword.")
+                            .font(.system(.subheadline, design: .monospaced))
+                            .foregroundColor(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .padding(.top, 60)
+                    .padding(.horizontal, 20)
                 }
                 Spacer()
             }
             .padding()
-            .transition(.opacity)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
-        .accentColor(.accentColor)
         .frame(minWidth: 700, minHeight: 500)
-        .animation(.easeInOut(duration: 0.3), value: selectedCategoryIndex)
     }
 
     // MARK: Body
@@ -137,7 +107,7 @@ struct ContentView: View {
     var body: some View {
         ZStack {
             if showIntro {
-                introView
+                IntroView(showIntro: $showIntro)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             } else {
                 mainView
@@ -145,5 +115,21 @@ struct ContentView: View {
             }
         }
         .animation(.easeInOut(duration: 0.5), value: showIntro)
+        .animation(.easeInOut(duration: 0.3), value: selectedCategoryIndex)
+        .overlay(alignment: .bottom) {
+            if let toast = toastText {
+                Text(toast)
+                    .font(.system(.caption, design: .monospaced))
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(Color(nsColor: .controlBackgroundColor).opacity(0.85))
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+                    .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 4)
+                    .transition(.opacity)
+                    .padding(.bottom, 40)
+            }
+        }
+        .edgesIgnoringSafeArea(.bottom)
     }
 }

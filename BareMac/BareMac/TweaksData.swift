@@ -8,12 +8,17 @@ public struct Tweak: Identifiable {
     public let command: String
     public let revertCommand: String
     public var isSelected: Bool = false
+    public var requiresRestart: Bool = false
+    public var requiresKillall: Bool {
+        return command.contains("killall")
+    }
 }
 
 /// A collection of tweaks grouped under a category name.
 public struct TweakCategory: Identifiable {
     public let id = UUID()
     public let name: String
+    public let icon: String?
     public var tweaks: [Tweak]
 }
 
@@ -111,10 +116,10 @@ private let screenshotTweaks: [Tweak] = [
     )
 ]
 
-/// The complete list of tweak categories for BareMac.
+/// The complete list of tweak categories for BareMac, each optionally with an icon.
 public let defaultCategories: [TweakCategory] = [
-    TweakCategory(name: "Finder", tweaks: finderTweaks),
-    TweakCategory(name: "Dock", tweaks: dockTweaks),
-    TweakCategory(name: "System", tweaks: systemTweaks),
-    TweakCategory(name: "Screenshot", tweaks: screenshotTweaks)
+    TweakCategory(name: "Finder", icon: "💻", tweaks: finderTweaks),
+    TweakCategory(name: "Dock", icon: "🧩", tweaks: dockTweaks),
+    TweakCategory(name: "System", icon: "⚙️", tweaks: systemTweaks),
+    TweakCategory(name: "Screenshot", icon: "📸", tweaks: screenshotTweaks)
 ]
