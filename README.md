@@ -6,18 +6,10 @@
 <p align="center">A minimal and modular macOS tweak utility built with SwiftUI. Fast. Focused. Terminal-inspired.</p>
 
 ---
-## 🚧 PROJECT ON HIATUS — BUT NOT DEAD
+# 🚧 Project Abandoned and Archived
 
-Hey folks! BareMac is taking a deliberate pit-stop.
-
-- **Why?** I’m rebuilding the app from the ground up with a cleaner architecture and a larger, fully-tested tweak library.  
-- **What stays?** All current code and commit history remain publicly visible for anyone who wants to poke around, fork, or learn from it.  
-- **What’s frozen?** I’m disabling new issues and pull requests while the rewrite happens so I can focus. Existing discussions stay archived for reference.  
-- **ETA?** No hard date yet. Once the MVP of the rewrite is stable I’ll unfreeze the repo, re-enable contributions, and publish a fresh roadmap.  
-- **Want updates?** Hit “Watch → Custom → Releases” on GitHub to get notified the moment development restarts.  
-- **Need something now?** Feel free to fork under the project’s current license. Just don’t rely on future merges until the hiatus lifts.  
-
-Thanks for your patience and interest. BareMac *will* return—leaner, faster, and packed with rock-solid tweaks.
+BareMac was originally designed as a macOS tweak toolkit for those who like a minimalist approach. It would have run exclusively on zsh commands with a lightweight SwiftUI front-end. Its main aim was to provide power users and terminal enthusiasts with a simple, script-first interface for system customisation. Despite early progress and a working prototype, the strict zsh-only requirement limited the breadth of achievable features, and ongoing changes in macOS security and sandboxing made many shell-based tweaks unreliable and inconsistent.
+It proved difficult to balance simplicity against functionality without compromising the original ethos. Consequently, development has been permanently discontinued. This repository is now archived in a read-only state, and no further modifications or updates will be accepted, preserving BareMac as a concise demonstration of zsh-driven minimalism.
 ---
 
 ## 🚀 What is BareMac?
