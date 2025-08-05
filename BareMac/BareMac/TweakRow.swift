@@ -8,12 +8,13 @@ struct TweakRow: View {
         Button(action: {
             withAnimation(.spring()) {
                 tweak.isSelected.toggle()
-                let task = Process()
-                task.standardOutput = FileHandle.nullDevice
-                task.standardError = FileHandle.nullDevice
-                task.launchPath = "/bin/zsh"
-                task.arguments = ["-c", tweak.isSelected ? tweak.command : tweak.revertCommand]
-                try? task.run()
+            }
+            Task {
+                if tweak.isSelected {
+                    await tweak.apply()
+                } else {
+                    await tweak.revert()
+                }
                 onToggle(tweak.isSelected ? "enabled" : "reverted")
             }
         }) {
