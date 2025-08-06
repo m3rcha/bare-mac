@@ -19,13 +19,21 @@ struct TweakRow: View {
     }
 
     private func detectInitialState() {
+        guard let cmd = tweak.detectCommand else { return }
+        Task {
+            if let output = await TweakExecutor.read(cmd)?.trimmingCharacters(in: .whitespacesAndNewlines) {
+                await MainActor.run {
+                    self.isOn = (output == "1" || output.lowercased() == "true")
+                }
+            }
+        }
     }
 
     private func apply(_ enabled: Bool) async {
         let cmd = enabled ? tweak.command : tweak.revertCommand
         let ok = await TweakExecutor.run(cmd)
         if !ok {
-            isOn.toggle()
+            await MainActor.run { isOn.toggle() }
             print("[TweakRow] Command failed")
         }
     }
