@@ -3,20 +3,17 @@ import Foundation
 struct Tweak: Identifiable {
     let id = UUID()
     let name: String
-    let command: String
-    let revertCommand: String
     let category: TweakCategory
-    let detectCommand: String?
-    
+    let detect: (() async -> Bool)?
+    let setState: (Bool) async -> Bool
+
     init(name: String,
-         command: String,
-         revertCommand: String,
          category: TweakCategory,
-         detectCommand: String? = nil) {
+         detect: (() async -> Bool)? = nil,
+         setState: @escaping (Bool) async -> Bool) {
         self.name = name
-        self.command = command
-        self.revertCommand = revertCommand
         self.category = category
-        self.detectCommand = detectCommand
+        self.detect = detect
+        self.setState = setState
     }
 }

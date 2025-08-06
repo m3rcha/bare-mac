@@ -36,23 +36,18 @@ This version (v0.2) focuses entirely on UI/UX polish, modularization, and perfor
 - **Search bar** with live filtering and terminal-style aesthetics
 - Fully **modular SwiftUI file structure**
 - **Graphite-inspired theme** (`#1f1f1e`) and monospaced typography
+- Sample Finder, Dock, Safari, and screenshot tweaks using helper-backed actions
 
-> **Note:** Most tweaks are placeholders or visual mockups.  
-> Core functionality will be expanded in future versions.
+> **Note:** The included tweaks are limited but functional; more categories will be added over time.
 
 ---
 
 ## 🧠 Technical Overview
 
 - SwiftUI-first architecture with MVVM-style separation
-- All toggle commands are handled using:
-  
-  ```swift
-  Process().launchPath = "/bin/zsh"
-  Process().arguments = ["-c", tweak.command]
-  ```
+- Tweaks are applied through a helper that writes directly to `UserDefaults` and restarts affected processes when needed.
 
-- Reversible tweaks (with `revertCommand`) supported
+- Reversible tweaks supported via helper-backed state toggles
 - Toggle changes are instant and stateless (no persistent preferences yet)
 - Built-in `.toastText` system provides lightweight visual feedback
 - Sidebar state and selected category managed with `@State` and `@Binding`
@@ -62,7 +57,7 @@ This version (v0.2) focuses entirely on UI/UX polish, modularization, and perfor
 🔹 ContentView.swift      // Root logic, main layout and toggle logic
 🔹 SidebarView.swift      // Search bar + category sidebar
 🔹 TweakRow.swift         // Individual tweak toggle component
-🔹 TweaksData.swift       // Tweak definitions, commands, categories
+🔹 TweaksData.swift       // Tweak definitions, categories, helper actions
 🔹 IntroView.swift        // Launch screen with transition binding
 ```
 
