@@ -3,6 +3,7 @@ struct TweaksData {
         .init(name: "Show File Extensions",
               command: "defaults write NSGlobalDomain AppleShowAllExtensions -bool TRUE && killall Finder",
               revertCommand: "defaults write NSGlobalDomain AppleShowAllExtensions -bool FALSE && killall Finder",
-              category: .system)
+              category: .system,
+              detectCommand: "defaults read NSGlobalDomain AppleShowAllExtensions")
     ]
 }
