@@ -1,9 +1,10 @@
 import Foundation
 import AppKit
 
-/// Actor-based helper that applies and reverts tweaks without shell scripts.
-actor TweakHelper {
-    static let shared = TweakHelper()
+/// Service responsible for executing system commands and managing defaults.
+/// Actors ensure thread safety for async operations.
+actor TweakRunner {
+    static let shared = TweakRunner()
     private init() {}
 
     /// Sets a preference value for the given domain.

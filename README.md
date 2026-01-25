@@ -6,16 +6,17 @@
 <p align="center">A minimal and modular macOS tweak utility built with SwiftUI. Fast. Focused. Helper-powered.</p>
 
 > [!NOTE] 
-> **We are back!** After a ~5-month hiatus, BareMac is officially back in active development. Expect regular updates and fixes.
+> **BareMac v0.3 is here!** A complete architectural rewrite and UI redesign.
 
 ---
 
 ## 🚀 What is BareMac?
 
-**BareMac** is a lightweight macOS utility that allows users to toggle system-level tweaks instantly, through a simple graphical interface.  
-It aims to provide a clean, modern, and modular SwiftUI experience for power users who want more control over macOS behaviors — without touching Terminal.
+**BareMac** is a lightweight macOS utility that allows users to toggle system-level tweaks instantly, through a modern graphical interface.  
+It creates a bridge between complex terminal commands and a user-friendly dashboard.
 
-This version (v0.3) focuses on UI/UX polish, modularization, and **state persistence**.
+ **v0.3** introduces a robust MVVM architecture, proper state management, and a completely refreshed design language.
+
 
 ---
 
@@ -34,22 +35,25 @@ This version (v0.3) focuses on UI/UX polish, modularization, and **state persist
 
 ---
 
-## 🧠 Technical Overview
+## 🧠 Architecture & Design (v0.3)
 
-- SwiftUI-first architecture with MVVM-style separation
-- Tweaks are executed through `TweakHelper`, an actor using native APIs instead of shell scripts.
-- **Bi-directional sync**: Checks system defaults on launch to update UI state
-- Reversible tweaks are supported through paired asynchronous apply/revert closures
-- Built-in `.toastText` system provides lightweight visual feedback
-- Sidebar state and selected category managed with `@State` and `@Binding`
-- View files include:
+**Why this new UI?**
+The v0.3 redesign moves away from the "terminal-like" aesthetic to a modern, "native-plus" feel. The goal was to reduce visual clutter and make the app feel like a premium tool.
 
-```text
-🔹 ContentView.swift      // Root logic, main layout and toggle logic
-🔹 SidebarView.swift      // Search bar + category sidebar
-🔹 TweakRow.swift         // Individual tweak toggle component
-🔹 TweaksData.swift       // Tweak definitions and categories
-🔹 IntroView.swift        // Launch screen with transition binding
+- **MVVM Architecture**: Strict separation between Logic (`TweakRunner`), Data (`TweakRepository`), and View (`HomeView`).
+- **Component-Based**: Every UI element is a reusable component (`TweakCard`, `SearchBar`).
+- **State Persistence**: The app treats the System as the Source of Truth. It reads values on launch and stays in sync.
+- **Performance**: Asynchronous checks ensure the UI never blocks the main thread.
+
+### Folder Structure
+```
+BareMac/
+├── App/           # Entry point & Assets
+├── Models/        # Data definitions
+├── Services/      # Business logic (Runner, Repository)
+├── ViewModels/    # State management
+├── Views/         # UI Components & Screens
+└── Utilities/     # Helpers
 ```
 
 ---
