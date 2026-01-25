@@ -6,7 +6,7 @@
 <p align="center">A minimal and modular macOS tweak utility built with SwiftUI. Fast. Focused. Helper-powered.</p>
 
 > [!NOTE] 
-> **BareMac v0.3 is here!** A complete architectural rewrite and UI redesign.
+> **BareMac v0.3 is here!** Major Redesign, **macOS Sequoia** support, and Window Management tools.
 
 ---
 
@@ -15,7 +15,7 @@
 **BareMac** is a lightweight macOS utility that allows users to toggle system-level tweaks instantly, through a modern graphical interface.  
 It creates a bridge between complex terminal commands and a user-friendly dashboard.
 
- **v0.3** introduces a robust MVVM architecture, proper state management, and a completely refreshed design language.
+ **v0.3** introduces strict MVVM architecture, proper state management, **macOS Sequoia compatibility**, and a dedicated **Window Management** suite.
 
 
 ---

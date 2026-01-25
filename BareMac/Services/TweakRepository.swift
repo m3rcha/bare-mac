@@ -310,11 +310,59 @@ struct TweakRepository {
         )
     ]
     
+    // MARK: - Window Management (New in v0.3)
+    
+    private static let windowTweaks: [Tweak] = [
+        Tweak(
+            name: "Disable 'Click Wallpaper to Reveal Desktop'",
+            description: "macOS Sequoia: Prevents windows from moving away when clicking wallpaper",
+            apply: {
+                await TweakRunner.shared.setDefaults(domain: "com.apple.WindowManager", key: "EnableStandardClickToShowDesktop", value: false)
+            },
+            revert: {
+                await TweakRunner.shared.setDefaults(domain: "com.apple.WindowManager", key: "EnableStandardClickToShowDesktop", value: true)
+            },
+            check: {
+                let val = await TweakRunner.shared.getDefaults(domain: "com.apple.WindowManager", key: "EnableStandardClickToShowDesktop") as? Bool
+                return val == false
+            }
+        ),
+        Tweak(
+            name: "Enable Stage Manager",
+            description: "Toggles Stage Manager for window organization",
+            apply: {
+                await TweakRunner.shared.setDefaults(domain: "com.apple.WindowManager", key: "GloballyEnabled", value: true)
+            },
+            revert: {
+                await TweakRunner.shared.setDefaults(domain: "com.apple.WindowManager", key: "GloballyEnabled", value: false)
+            },
+            check: {
+                let val = await TweakRunner.shared.getDefaults(domain: "com.apple.WindowManager", key: "GloballyEnabled") as? Bool
+                return val == true
+            }
+        ),
+        Tweak(
+            name: "Accelerate Window Resize",
+            description: "Speeds up the window resize animation",
+            apply: {
+                await TweakRunner.shared.setDefaults(domain: "NSGlobalDomain", key: "NSWindowResizeTime", value: 0.001)
+            },
+            revert: {
+                await TweakRunner.shared.removeDefaults(domain: "NSGlobalDomain", key: "NSWindowResizeTime")
+            },
+            check: {
+                let val = await TweakRunner.shared.getDefaults(domain: "NSGlobalDomain", key: "NSWindowResizeTime") as? Double
+                return val == 0.001
+            }
+        )
+    ]
+    
     // MARK: - Public Access
     
     static let categories: [TweakCategory] = [
         TweakCategory(name: "Finder", icon: "laptopcomputer", tweaks: finderTweaks),
         TweakCategory(name: "Dock", icon: "menubar.dock.rectangle", tweaks: dockTweaks),
+        TweakCategory(name: "Window Mgmt", icon: "macwindow.on.rectangle", tweaks: windowTweaks),
         TweakCategory(name: "System", icon: "gearshape", tweaks: systemTweaks),
         TweakCategory(name: "Screenshot", icon: "camera.viewfinder", tweaks: screenshotTweaks)
     ]
