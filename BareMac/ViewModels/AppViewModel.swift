@@ -11,10 +11,17 @@ class AppViewModel: ObservableObject {
     init() {
         self.categories = TweakRepository.categories
         self.selectedCategory = categories.first
-        Task {
-            // Slight delay to ensure view readiness
-            try? await Task.sleep(nanoseconds: 100_000_000)
-            await checkAllTweaks()
+    }
+    
+    func loadInitialData() async {
+        await checkAllTweaks()
+    }
+    
+    func selectCategory(_ category: TweakCategory?) {
+        if selectedCategory != category {
+            Task {
+                selectedCategory = category
+            }
         }
     }
     

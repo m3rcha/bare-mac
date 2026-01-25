@@ -9,33 +9,22 @@ actor TweakRunner {
 
     /// Sets a preference value for the given domain.
     func setDefaults(domain: String, key: String, value: Any) {
-        if let defaults = UserDefaults(suiteName: domain) {
-            defaults.set(value, forKey: key)
-            defaults.synchronize()
-        } else {
-            UserDefaults.standard.set(value, forKey: key)
-            UserDefaults.standard.synchronize()
-        }
+        let appId = (domain == "NSGlobalDomain") ? kCFPreferencesAnyApplication : domain as CFString
+        CFPreferencesSetValue(key as CFString, value as CFPropertyList, appId, kCFPreferencesCurrentUser, kCFPreferencesAnyHost)
+        CFPreferencesSynchronize(appId, kCFPreferencesCurrentUser, kCFPreferencesAnyHost)
     }
 
     /// Reads a preference value for the given domain.
     func getDefaults(domain: String, key: String) -> Any? {
-        if let defaults = UserDefaults(suiteName: domain) {
-            return defaults.object(forKey: key)
-        } else {
-            return UserDefaults.standard.object(forKey: key)
-        }
+        let appId = (domain == "NSGlobalDomain") ? kCFPreferencesAnyApplication : domain as CFString
+        return CFPreferencesCopyValue(key as CFString, appId, kCFPreferencesCurrentUser, kCFPreferencesAnyHost)
     }
 
     /// Removes a preference value for the given domain.
     func removeDefaults(domain: String, key: String) {
-        if let defaults = UserDefaults(suiteName: domain) {
-            defaults.removeObject(forKey: key)
-            defaults.synchronize()
-        } else {
-            UserDefaults.standard.removeObject(forKey: key)
-            UserDefaults.standard.synchronize()
-        }
+        let appId = (domain == "NSGlobalDomain") ? kCFPreferencesAnyApplication : domain as CFString
+        CFPreferencesSetValue(key as CFString, nil, appId, kCFPreferencesCurrentUser, kCFPreferencesAnyHost)
+        CFPreferencesSynchronize(appId, kCFPreferencesCurrentUser, kCFPreferencesAnyHost)
     }
 
     /// Terminates running applications with the provided bundle identifier.

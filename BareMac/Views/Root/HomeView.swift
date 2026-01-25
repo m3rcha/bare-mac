@@ -4,9 +4,12 @@ struct HomeView: View {
     @StateObject private var viewModel = AppViewModel()
     
     var body: some View {
-        NavigationSplitView {
+        HStack(spacing: 0) {
             Sidebar(viewModel: viewModel)
-        } detail: {
+                .frame(width: 220)
+            
+            Divider()
+            
             VStack(spacing: 0) {
                 // Header
                 HStack {
@@ -38,8 +41,10 @@ struct HomeView: View {
                     .padding()
                 }
             }
-            .navigationTitle("")
         }
         .frame(minWidth: 900, minHeight: 600)
+        .task {
+            await viewModel.loadInitialData()
+        }
     }
 }
