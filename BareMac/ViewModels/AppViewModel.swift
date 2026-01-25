@@ -12,6 +12,8 @@ class AppViewModel: ObservableObject {
         self.categories = TweakRepository.categories
         self.selectedCategory = categories.first
         Task {
+            // Slight delay to ensure view readiness
+            try? await Task.sleep(nanoseconds: 100_000_000)
             await checkAllTweaks()
         }
     }
@@ -40,12 +42,16 @@ class AppViewModel: ObservableObject {
     }
     
     private func checkAllTweaks() async {
+        var newActiveTweaks: Set<UUID> = []
         for category in categories {
             for tweak in category.tweaks {
                 if await tweak.check() {
-                    activeTweaks.insert(tweak.id)
+                    newActiveTweaks.insert(tweak.id)
                 }
             }
+        }
+        if activeTweaks != newActiveTweaks {
+            activeTweaks = newActiveTweaks
         }
     }
     

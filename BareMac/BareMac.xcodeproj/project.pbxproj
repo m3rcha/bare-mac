@@ -6,6 +6,19 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		0DBAC3282F263DBC001D70CC /* Tweak.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DBAC3192F263DBC001D70CC /* Tweak.swift */; };
+		0DBAC3292F263DBC001D70CC /* TweakRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DBAC31D2F263DBC001D70CC /* TweakRunner.swift */; };
+		0DBAC32A2F263DBC001D70CC /* TweakCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DBAC3222F263DBC001D70CC /* TweakCard.swift */; };
+		0DBAC32B2F263DBC001D70CC /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DBAC3242F263DBC001D70CC /* HomeView.swift */; };
+		0DBAC32C2F263DBC001D70CC /* AppViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DBAC31F2F263DBC001D70CC /* AppViewModel.swift */; };
+		0DBAC32D2F263DBC001D70CC /* SearchBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DBAC3212F263DBC001D70CC /* SearchBar.swift */; };
+		0DBAC32E2F263DBC001D70CC /* TweakRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DBAC31C2F263DBC001D70CC /* TweakRepository.swift */; };
+		0DBAC32F2F263DBC001D70CC /* Sidebar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DBAC3252F263DBC001D70CC /* Sidebar.swift */; };
+		0DBAC3302F263DBC001D70CC /* TweakCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DBAC31A2F263DBC001D70CC /* TweakCategory.swift */; };
+		0DBAC3332F263DBC001D70C3 /* BareMacApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DBAC3312F263DBC001D70C1 /* BareMacApp.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		B9E0FB6F2DBA7B08007F7A95 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,9 +37,19 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0DBAC3192F263DBC001D70CC /* Tweak.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tweak.swift; sourceTree = "<group>"; };
+		0DBAC31A2F263DBC001D70CC /* TweakCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TweakCategory.swift; sourceTree = "<group>"; };
+		0DBAC31C2F263DBC001D70CC /* TweakRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TweakRepository.swift; sourceTree = "<group>"; };
+		0DBAC31D2F263DBC001D70CC /* TweakRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TweakRunner.swift; sourceTree = "<group>"; };
+		0DBAC31F2F263DBC001D70CC /* AppViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppViewModel.swift; sourceTree = "<group>"; };
+		0DBAC3212F263DBC001D70CC /* SearchBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBar.swift; sourceTree = "<group>"; };
+		0DBAC3222F263DBC001D70CC /* TweakCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TweakCard.swift; sourceTree = "<group>"; };
+		0DBAC3242F263DBC001D70CC /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		0DBAC3252F263DBC001D70CC /* Sidebar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sidebar.swift; sourceTree = "<group>"; };
 		B9E0FB602DBA7B06007F7A95 /* BareMac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BareMac.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B9E0FB6E2DBA7B08007F7A95 /* BareMacTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BareMacTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B9E0FB782DBA7B08007F7A95 /* BareMacUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BareMacUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		0DBAC3312F263DBC001D70C1 /* BareMacApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BareMacApp.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -72,9 +95,75 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0DBAC31B2F263DBC001D70CC /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				0DBAC3192F263DBC001D70CC /* Tweak.swift */,
+				0DBAC31A2F263DBC001D70CC /* TweakCategory.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		0DBAC31E2F263DBC001D70CC /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				0DBAC31C2F263DBC001D70CC /* TweakRepository.swift */,
+				0DBAC31D2F263DBC001D70CC /* TweakRunner.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		0DBAC3202F263DBC001D70CC /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				0DBAC31F2F263DBC001D70CC /* AppViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		0DBAC3232F263DBC001D70CC /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				0DBAC3212F263DBC001D70CC /* SearchBar.swift */,
+				0DBAC3222F263DBC001D70CC /* TweakCard.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		0DBAC3262F263DBC001D70CC /* Root */ = {
+			isa = PBXGroup;
+			children = (
+				0DBAC3242F263DBC001D70CC /* HomeView.swift */,
+				0DBAC3252F263DBC001D70CC /* Sidebar.swift */,
+			);
+			path = Root;
+			sourceTree = "<group>";
+		};
+		0DBAC3272F263DBC001D70CC /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				0DBAC3232F263DBC001D70CC /* Components */,
+				0DBAC3262F263DBC001D70CC /* Root */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		0DBAC3322F263DBC001D70C2 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				0DBAC3312F263DBC001D70C1 /* BareMacApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
 		B9E0FB572DBA7B06007F7A95 = {
 			isa = PBXGroup;
 			children = (
+				0DBAC3322F263DBC001D70C2 /* App */,
+				0DBAC31B2F263DBC001D70CC /* Models */,
+				0DBAC31E2F263DBC001D70CC /* Services */,
+				0DBAC3202F263DBC001D70CC /* ViewModels */,
+				0DBAC3272F263DBC001D70CC /* Views */,
 				B9E0FB622DBA7B06007F7A95 /* BareMac */,
 				B9E0FB712DBA7B08007F7A95 /* BareMacTests */,
 				B9E0FB7B2DBA7B08007F7A95 /* BareMacUITests */,
@@ -236,6 +325,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0DBAC3282F263DBC001D70CC /* Tweak.swift in Sources */,
+				0DBAC3292F263DBC001D70CC /* TweakRunner.swift in Sources */,
+				0DBAC32A2F263DBC001D70CC /* TweakCard.swift in Sources */,
+				0DBAC32B2F263DBC001D70CC /* HomeView.swift in Sources */,
+				0DBAC32C2F263DBC001D70CC /* AppViewModel.swift in Sources */,
+				0DBAC32D2F263DBC001D70CC /* SearchBar.swift in Sources */,
+				0DBAC32E2F263DBC001D70CC /* TweakRepository.swift in Sources */,
+				0DBAC32F2F263DBC001D70CC /* Sidebar.swift in Sources */,
+				0DBAC3302F263DBC001D70CC /* TweakCategory.swift in Sources */,
+				0DBAC3332F263DBC001D70C3 /* BareMacApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
