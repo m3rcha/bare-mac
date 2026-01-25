@@ -19,6 +19,19 @@ struct ContentView: View {
         return nil
     }
 
+    private func checkAllTweaks() async {
+        var newCategories = categories
+        for catIndex in newCategories.indices {
+            for tweakIndex in newCategories[catIndex].tweaks.indices {
+                let isEnabled = await newCategories[catIndex].tweaks[tweakIndex].check()
+                newCategories[catIndex].tweaks[tweakIndex].isSelected = isEnabled
+            }
+        }
+        withAnimation {
+            categories = newCategories
+        }
+    }
+
     // MARK: Main View
 
     var mainView: some View {
@@ -100,6 +113,9 @@ struct ContentView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
         .frame(minWidth: 700, minHeight: 500)
+        .task {
+            await checkAllTweaks()
+        }
     }
 
     // MARK: Body
@@ -133,3 +149,4 @@ struct ContentView: View {
         .edgesIgnoringSafeArea(.bottom)
     }
 }
+

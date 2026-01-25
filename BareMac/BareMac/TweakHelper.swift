@@ -17,6 +17,15 @@ actor TweakHelper {
         }
     }
 
+    /// Reads a preference value for the given domain.
+    func getDefaults(domain: String, key: String) -> Any? {
+        if let defaults = UserDefaults(suiteName: domain) {
+            return defaults.object(forKey: key)
+        } else {
+            return UserDefaults.standard.object(forKey: key)
+        }
+    }
+
     /// Removes a preference value for the given domain.
     func removeDefaults(domain: String, key: String) {
         if let defaults = UserDefaults(suiteName: domain) {

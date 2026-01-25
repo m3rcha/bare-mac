@@ -5,6 +5,9 @@
 <h1 align="center">BareMac</h1>
 <p align="center">A minimal and modular macOS tweak utility built with SwiftUI. Fast. Focused. Helper-powered.</p>
 
+> [!NOTE] 
+> **We are back!** After a ~5-month hiatus, BareMac is officially back in active development. Expect regular updates and fixes.
+
 ---
 
 ## 🚀 What is BareMac?
@@ -12,7 +15,7 @@
 **BareMac** is a lightweight macOS utility that allows users to toggle system-level tweaks instantly, through a simple graphical interface.  
 It aims to provide a clean, modern, and modular SwiftUI experience for power users who want more control over macOS behaviors — without touching Terminal.
 
-This version (v0.2) focuses entirely on UI/UX polish, modularization, and performance-oriented view rendering.
+This version (v0.3) focuses on UI/UX polish, modularization, and **state persistence**.
 
 ---
 
@@ -20,7 +23,8 @@ This version (v0.2) focuses entirely on UI/UX polish, modularization, and perfor
 
 - Organized tweaks under sections
 - Expanded library of Finder, Dock, System, and Screenshot tweaks
-- **Live toggle system**: no apply button, changes apply instantly via a native helper
+- **Live toggle system**: changes apply instantly via a native helper
+- **State Persistence**: App reads system state on launch to show correct toggle status
 - Thread-safe actor-based helper powered by Swift concurrency
 - **Search bar** with live filtering and terminal-style aesthetics
 - Fully **modular SwiftUI file structure**
@@ -34,8 +38,8 @@ This version (v0.2) focuses entirely on UI/UX polish, modularization, and perfor
 
 - SwiftUI-first architecture with MVVM-style separation
 - Tweaks are executed through `TweakHelper`, an actor using native APIs instead of shell scripts.
+- **Bi-directional sync**: Checks system defaults on launch to update UI state
 - Reversible tweaks are supported through paired asynchronous apply/revert closures
-- Toggle changes are run asynchronously and remain stateless (no persistent preferences yet)
 - Built-in `.toastText` system provides lightweight visual feedback
 - Sidebar state and selected category managed with `@State` and `@Binding`
 - View files include:
@@ -59,21 +63,25 @@ This version (v0.2) focuses entirely on UI/UX polish, modularization, and perfor
 
 ---
 
-## 🧪 Limitations (v0.2)
+## 🧪 Limitations (v0.3)
 
-- No tweak persistence — all toggles reset on relaunch
 - Some system changes may require additional permissions
 - No error handling or logs (yet)
 - Not notarized — Gatekeeper will warn on first launch
-- Many tweaks are currently non-functional or deprecated on newer macOS
+- Some tweaks may be deprecated on newer macOS (Sonoma/Sequoia)
 
 ---
 
 ## 📆 Installation
 
-- Download the `.dmg` file from the [Releases](https://github.com/m3rcha/bare-mac/releases) page
-- Drag **BareMac.app** into your Applications folder
-- Launch the app, and **grant Full Disk Access** via System Settings if required
+> **⚠️ Note:** This is an intermediate release (v0.3) used for development. **No pre-built binaries (.dmg) are provided for this version.**
+>
+> **v0.4 is coming soon!** 🚀
+
+To test this version:
+- Clone the repository
+- Open `BareMac.xcodeproj` in Xcode
+- Build and Run manually
 
 ---
 

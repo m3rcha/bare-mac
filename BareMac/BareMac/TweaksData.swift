@@ -7,6 +7,7 @@ public struct Tweak: Identifiable {
     public let description: String
     public let apply: () async -> Void
     public let revert: () async -> Void
+    public let check: () async -> Bool
     public var isSelected: Bool = false
 }
 
@@ -30,6 +31,10 @@ private let finderTweaks: [Tweak] = [
         revert: {
             await TweakHelper.shared.setDefaults(domain: "com.apple.finder", key: "AppleShowAllFiles", value: false)
             await TweakHelper.shared.terminateApp(bundleId: "com.apple.finder")
+        },
+        check: {
+            let val = await TweakHelper.shared.getDefaults(domain: "com.apple.finder", key: "AppleShowAllFiles") as? Bool
+            return val == true
         }
     ),
     Tweak(
@@ -40,6 +45,10 @@ private let finderTweaks: [Tweak] = [
         },
         revert: {
             await TweakHelper.shared.setDefaults(domain: "com.apple.desktopservices", key: "DSDontWriteNetworkStores", value: false)
+        },
+        check: {
+            let val = await TweakHelper.shared.getDefaults(domain: "com.apple.desktopservices", key: "DSDontWriteNetworkStores") as? Bool
+            return val == true
         }
     ),
     Tweak(
@@ -52,6 +61,10 @@ private let finderTweaks: [Tweak] = [
         revert: {
             await TweakHelper.shared.setDefaults(domain: "com.apple.finder", key: "_FXShowPosixPathInTitle", value: false)
             await TweakHelper.shared.terminateApp(bundleId: "com.apple.finder")
+        },
+        check: {
+            let val = await TweakHelper.shared.getDefaults(domain: "com.apple.finder", key: "_FXShowPosixPathInTitle") as? Bool
+            return val == true
         }
     ),
     Tweak(
@@ -64,6 +77,10 @@ private let finderTweaks: [Tweak] = [
         revert: {
             await TweakHelper.shared.setDefaults(domain: "com.apple.finder", key: "QLEnableTextSelection", value: false)
             await TweakHelper.shared.terminateApp(bundleId: "com.apple.finder")
+        },
+        check: {
+            let val = await TweakHelper.shared.getDefaults(domain: "com.apple.finder", key: "QLEnableTextSelection") as? Bool
+            return val == true
         }
     ),
     Tweak(
@@ -76,6 +93,10 @@ private let finderTweaks: [Tweak] = [
         revert: {
             await TweakHelper.shared.setDefaults(domain: "com.apple.finder", key: "ShowPathbar", value: false)
             await TweakHelper.shared.terminateApp(bundleId: "com.apple.finder")
+        },
+        check: {
+            let val = await TweakHelper.shared.getDefaults(domain: "com.apple.finder", key: "ShowPathbar") as? Bool
+            return val == true
         }
     )
 ]
@@ -98,6 +119,12 @@ private let dockTweaks: [Tweak] = [
             await TweakHelper.shared.setDefaults(domain: domain, key: "autohide-delay", value: 0.5)
             await TweakHelper.shared.setDefaults(domain: domain, key: "autohide-time-modifier", value: 0.5)
             await TweakHelper.shared.terminateApp(bundleId: domain)
+        },
+        check: {
+            let domain = "com.apple.dock"
+            let autohide = await TweakHelper.shared.getDefaults(domain: domain, key: "autohide") as? Bool
+            let delay = await TweakHelper.shared.getDefaults(domain: domain, key: "autohide-delay") as? Double
+            return autohide == true && delay == 0
         }
     ),
     Tweak(
@@ -110,6 +137,10 @@ private let dockTweaks: [Tweak] = [
         revert: {
             await TweakHelper.shared.removeDefaults(domain: "com.apple.dock", key: "expose-animation-duration")
             await TweakHelper.shared.terminateApp(bundleId: "com.apple.dock")
+        },
+        check: {
+            let val = await TweakHelper.shared.getDefaults(domain: "com.apple.dock", key: "expose-animation-duration") as? Double
+            return val == 0
         }
     ),
     Tweak(
@@ -122,6 +153,10 @@ private let dockTweaks: [Tweak] = [
         revert: {
             await TweakHelper.shared.removeDefaults(domain: "com.apple.dock", key: "no-glass")
             await TweakHelper.shared.terminateApp(bundleId: "com.apple.dock")
+        },
+        check: {
+            let val = await TweakHelper.shared.getDefaults(domain: "com.apple.dock", key: "no-glass") as? Bool
+            return val == true
         }
     ),
     Tweak(
@@ -134,6 +169,10 @@ private let dockTweaks: [Tweak] = [
         revert: {
             await TweakHelper.shared.setDefaults(domain: "com.apple.dock", key: "single-app", value: false)
             await TweakHelper.shared.terminateApp(bundleId: "com.apple.dock")
+        },
+        check: {
+            let val = await TweakHelper.shared.getDefaults(domain: "com.apple.dock", key: "single-app") as? Bool
+            return val == true
         }
     ),
     Tweak(
@@ -146,6 +185,10 @@ private let dockTweaks: [Tweak] = [
         revert: {
             await TweakHelper.shared.setDefaults(domain: "com.apple.dock", key: "minimize-to-application", value: false)
             await TweakHelper.shared.terminateApp(bundleId: "com.apple.dock")
+        },
+        check: {
+            let val = await TweakHelper.shared.getDefaults(domain: "com.apple.dock", key: "minimize-to-application") as? Bool
+            return val == true
         }
     )
 ]
@@ -160,6 +203,10 @@ private let systemTweaks: [Tweak] = [
         },
         revert: {
             await TweakHelper.shared.setDefaults(domain: "NSGlobalDomain", key: "NSAutomaticWindowAnimationsEnabled", value: true)
+        },
+        check: {
+            let val = await TweakHelper.shared.getDefaults(domain: "NSGlobalDomain", key: "NSAutomaticWindowAnimationsEnabled") as? Bool
+            return val == false
         }
     ),
     Tweak(
@@ -170,6 +217,10 @@ private let systemTweaks: [Tweak] = [
         },
         revert: {
             await TweakHelper.shared.setDefaults(domain: "com.apple.LaunchServices", key: "LSQuarantine", value: true)
+        },
+        check: {
+            let val = await TweakHelper.shared.getDefaults(domain: "com.apple.LaunchServices", key: "LSQuarantine") as? Bool
+            return val == false
         }
     ),
     Tweak(
@@ -180,6 +231,10 @@ private let systemTweaks: [Tweak] = [
         },
         revert: {
             await TweakHelper.shared.setDefaults(domain: "NSGlobalDomain", key: "NSAutomaticSpellingCorrectionEnabled", value: true)
+        },
+        check: {
+            let val = await TweakHelper.shared.getDefaults(domain: "NSGlobalDomain", key: "NSAutomaticSpellingCorrectionEnabled") as? Bool
+            return val == false
         }
     ),
     Tweak(
@@ -192,6 +247,10 @@ private let systemTweaks: [Tweak] = [
         revert: {
             await TweakHelper.shared.setDefaults(domain: "NSGlobalDomain", key: "AppleShowAllExtensions", value: false)
             await TweakHelper.shared.terminateApp(bundleId: "com.apple.finder")
+        },
+        check: {
+            let val = await TweakHelper.shared.getDefaults(domain: "NSGlobalDomain", key: "AppleShowAllExtensions") as? Bool
+            return val == true
         }
     ),
     Tweak(
@@ -202,6 +261,10 @@ private let systemTweaks: [Tweak] = [
         },
         revert: {
             await TweakHelper.shared.setDefaults(domain: "NSGlobalDomain", key: "NSAutomaticCapitalizationEnabled", value: true)
+        },
+        check: {
+            let val = await TweakHelper.shared.getDefaults(domain: "NSGlobalDomain", key: "NSAutomaticCapitalizationEnabled") as? Bool
+            return val == false
         }
     )
 ]
@@ -218,6 +281,10 @@ private let screenshotTweaks: [Tweak] = [
         revert: {
             await TweakHelper.shared.setDefaults(domain: "com.apple.screencapture", key: "type", value: "png")
             await TweakHelper.shared.terminateApp(bundleId: "com.apple.SystemUIServer")
+        },
+        check: {
+            let val = await TweakHelper.shared.getDefaults(domain: "com.apple.screencapture", key: "type") as? String
+            return val == "jpg"
         }
     ),
     Tweak(
@@ -231,6 +298,11 @@ private let screenshotTweaks: [Tweak] = [
         revert: {
             await TweakHelper.shared.removeDefaults(domain: "com.apple.screencapture", key: "location")
             await TweakHelper.shared.terminateApp(bundleId: "com.apple.SystemUIServer")
+        },
+        check: {
+            let path = NSString(string: "~/Screenshots").expandingTildeInPath
+            let val = await TweakHelper.shared.getDefaults(domain: "com.apple.screencapture", key: "location") as? String
+            return val == path
         }
     ),
     Tweak(
@@ -243,6 +315,10 @@ private let screenshotTweaks: [Tweak] = [
         revert: {
             await TweakHelper.shared.setDefaults(domain: "com.apple.screencapture", key: "disable-shadow", value: false)
             await TweakHelper.shared.terminateApp(bundleId: "com.apple.SystemUIServer")
+        },
+        check: {
+            let val = await TweakHelper.shared.getDefaults(domain: "com.apple.screencapture", key: "disable-shadow") as? Bool
+            return val == true
         }
     )
 ]
