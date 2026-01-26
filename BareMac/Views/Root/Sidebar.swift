@@ -8,7 +8,11 @@ struct Sidebar: View {
     var body: some View {
         List(selection: Binding(
             get: { viewModel.selectedCategory },
-            set: { viewModel.selectCategory($0) }
+            set: { val in
+                DispatchQueue.main.async {
+                    viewModel.selectCategory(val)
+                }
+            }
         )) {
             ForEach(viewModel.categories) { category in
                 Label(category.name, systemImage: category.icon)
@@ -31,7 +35,7 @@ struct Sidebar: View {
                     .foregroundStyle(.red)
                     
                     VStack(spacing: 2) {
-                        Text("BareMac v0.3 early-alpha")
+                        Text("BareMac v0.4 alpha")
                             .font(.caption)
                             .fontWeight(.medium)
                             .foregroundStyle(.primary)

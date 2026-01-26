@@ -6,22 +6,112 @@ class AppViewModel: ObservableObject {
     @Published var categories: [TweakCategory] = []
     @Published var selectedCategory: TweakCategory?
     @Published var searchText: String = ""
-    @Published var activeTweaks: Set<UUID> = []
+    @Published var activeTweaks: Set<String> = [] // IDs of active tweaks
+    @Published var showCommunityTweaks: Bool = false {
+        didSet {
+            if showCommunityTweaks {
+                Task { await loadCommunityTweaks() }
+            } else {
+                // Remove community tweaks from display
+                // For simplicity, reload legacy only
+                Task { await loadInitialData() }
+            }
+        }
+    }
+    
+    private let legacySource = LegacyTweakSource()
+    // Placeholder URL - in a real app this would be the official repo
+    
+    private var legacyTweaks: [Tweak] = []
+    private var communityTweaks: [Tweak] = []
     
     init() {
-        self.categories = TweakRepository.categories
-        self.selectedCategory = categories.first
+        // Initial data load will happen in loadInitialData
+        
+        // Migration: Fix incorrect default URL from previous builds if it exists
+        // We also want to migrate from the "main" branch URL to this specific commit URL if desired, 
+        // or just ensure this new one is the target for any resets/fresh installs.
+        let oldBadURL = "https://raw.githubusercontent.com/m3rcha/bare-mac-tweaks/main/tweaks.json"
+        let previousAttemptURL = "https://raw.githubusercontent.com/m3rcha/baremac-tweaks/main/tweaks.json"
+        
+        let targetURL = "https://raw.githubusercontent.com/m3rcha/baremac-tweaks/3ade8c2086e18cad073cb05f3f12e74be33f04ee/tweaks.json"
+        
+        let currentURL = UserDefaults.standard.string(forKey: "communityRepoURL")
+        
+        // Migrate if legacy bad URL OR if we want to force this specific commit for the user now
+        if currentURL == oldBadURL || currentURL == previousAttemptURL {
+            UserDefaults.standard.set(targetURL, forKey: "communityRepoURL")
+            print("Migrated communityRepoURL to correct path: \(targetURL)")
+        }
     }
     
     func loadInitialData() async {
-        await checkAllTweaks()
+        do {
+            self.legacyTweaks = try await legacySource.loadTweaks()
+            updateDisplayedTweaks()
+        } catch {
+            print("Failed to load tweaks: \(error)")
+        }
+    }
+    
+    func loadCommunityTweaks() async {
+        let defaultURL = "https://raw.githubusercontent.com/m3rcha/baremac-tweaks/3ade8c2086e18cad073cb05f3f12e74be33f04ee/tweaks.json"
+        let urlString = UserDefaults.standard.string(forKey: "communityRepoURL") ?? defaultURL
+        
+        guard let url = URL(string: urlString) else {
+            print("Invalid community repo URL: \(urlString)")
+            return
+        }
+        
+        let source = CommunityTweakSource(url: url)
+        
+        do {
+            self.communityTweaks = try await source.loadTweaks()
+            await MainActor.run {
+                updateDisplayedTweaks()
+            }
+        } catch {
+            print("Failed to load community tweaks: \(error)")
+        }
+    }
+    
+    private func updateDisplayedTweaks() {
+        var allTweaks = legacyTweaks
+        if showCommunityTweaks {
+            allTweaks.append(contentsOf: communityTweaks)
+        }
+        
+        // Remove duplicates if any (based on ID)
+        // Prefer local/legacy if conflict? Or remote? 
+        // Let's assume distinct IDs or distinct sets for now.
+        
+        self.categories = groupTweaksIntoCategories(allTweaks)
+        if selectedCategory == nil {
+            self.selectedCategory = categories.first
+        }
+    }
+    
+    private func groupTweaksIntoCategories(_ tweaks: [Tweak]) -> [TweakCategory] {
+        let grouped = Dictionary(grouping: tweaks, by: { $0.category })
+        return grouped.map { key, value in
+            TweakCategory(name: key, icon: iconForCategory(key), tweaks: value)
+        }.sorted { $0.name < $1.name }
+    }
+    
+    private func iconForCategory(_ category: String) -> String {
+        switch category.lowercased() {
+        case "dock": return "dock.rectangle"
+        case "finder": return "magnifyingglass"
+        case "system": return "gear"
+        case "interface": return "macwindow"
+        case "performance": return "speedometer"
+        default: return "gearshape"
+        }
     }
     
     func selectCategory(_ category: TweakCategory?) {
         if selectedCategory != category {
-            Task {
-                selectedCategory = category
-            }
+            selectedCategory = category
         }
     }
     
@@ -37,29 +127,36 @@ class AppViewModel: ObservableObject {
     }
     
     func toggleTweak(_ tweak: Tweak) async {
-        let isActive = activeTweaks.contains(tweak.id)
+        // For now, toggle based on current simple state or just apply/revert
+        let isCurrentlyActive = activeTweaks.contains(tweak.id)
         
-        if isActive {
-            await tweak.revert()
-            activeTweaks.remove(tweak.id)
+        if isCurrentlyActive {
+            await revertBaseTweak(tweak)
         } else {
-            await tweak.apply()
-            activeTweaks.insert(tweak.id)
+            await applyBaseTweak(tweak)
         }
     }
     
-    private func checkAllTweaks() async {
-        var newActiveTweaks: Set<UUID> = []
-        for category in categories {
-            for tweak in category.tweaks {
-                if await tweak.check() {
-                    newActiveTweaks.insert(tweak.id)
-                }
-            }
+    func applyTweak(_ tweak: Tweak, params: [String: Any]? = nil) async {
+        await applyBaseTweak(tweak, params: params)
+    }
+    
+    func revertTweak(_ tweak: Tweak) async {
+        await revertBaseTweak(tweak)
+    }
+    
+    private func applyBaseTweak(_ tweak: Tweak, params: [String: Any]? = nil) async {
+        for op in tweak.apply {
+            _ = await TweakRunner.shared.executeOperation(op, context: params)
         }
-        if activeTweaks != newActiveTweaks {
-            activeTweaks = newActiveTweaks
+        activeTweaks.insert(tweak.id)
+    }
+    
+    private func revertBaseTweak(_ tweak: Tweak) async {
+        for op in tweak.revert {
+            _ = await TweakRunner.shared.executeOperation(op)
         }
+        activeTweaks.remove(tweak.id)
     }
     
     func isTweakActive(_ tweak: Tweak) -> Bool {
@@ -67,14 +164,16 @@ class AppViewModel: ObservableObject {
     }
     
     func resetAllTweaks() async {
+        // Iterate over all known tweaks and revert them if active
+        // Flatten all tweaks from categories
         let allTweaks = categories.flatMap { $0.tweaks }
         
         for tweak in allTweaks {
             if activeTweaks.contains(tweak.id) {
-                await tweak.revert()
+                await revertTweak(tweak)
             }
         }
-        
-        activeTweaks.removeAll()
     }
 }
+
+
