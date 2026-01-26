@@ -65,4 +65,16 @@ class AppViewModel: ObservableObject {
     func isTweakActive(_ tweak: Tweak) -> Bool {
         return activeTweaks.contains(tweak.id)
     }
+    
+    func resetAllTweaks() async {
+        let allTweaks = categories.flatMap { $0.tweaks }
+        
+        for tweak in allTweaks {
+            if activeTweaks.contains(tweak.id) {
+                await tweak.revert()
+            }
+        }
+        
+        activeTweaks.removeAll()
+    }
 }
