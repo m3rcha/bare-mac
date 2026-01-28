@@ -48,6 +48,7 @@ struct BareMacApp: App {
         
         Window("Advanced Settings", id: "settings") {
             AdvancedSettingsView()
+                .environmentObject(viewModel)
         }
         .windowResizability(.contentSize)
     }

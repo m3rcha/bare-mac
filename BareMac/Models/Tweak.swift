@@ -1,5 +1,11 @@
 import Foundation
 
+/// Indicates where a tweak was loaded from
+enum TweakSource: String, Codable, Hashable {
+    case builtIn = "built-in"
+    case community = "community"
+}
+
 struct Tweak: Identifiable, Hashable, Codable {
     let id: String
     let name: String
@@ -13,7 +19,30 @@ struct Tweak: Identifiable, Hashable, Codable {
     let revert: [TweakOperation]
     let parameters: [TweakParameter]? // Optional list of user-configurable parameters
     
-    init(id: String, name: String, description: String, category: String, platform: String, scope: String, riskLevel: String, supportedOS: [String]? = nil, apply: [TweakOperation], revert: [TweakOperation], parameters: [TweakParameter]? = nil) {
+    /// Source of the tweak (built-in or community). Defaults to built-in for backwards compatibility.
+    var source: TweakSource = .builtIn
+    
+    enum CodingKeys: String, CodingKey {
+        case id, name, description, category, platform, scope, riskLevel, supportedOS, apply, revert, parameters, source
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        description = try container.decode(String.self, forKey: .description)
+        category = try container.decode(String.self, forKey: .category)
+        platform = try container.decode(String.self, forKey: .platform)
+        scope = try container.decode(String.self, forKey: .scope)
+        riskLevel = try container.decode(String.self, forKey: .riskLevel)
+        supportedOS = try container.decodeIfPresent([String].self, forKey: .supportedOS)
+        apply = try container.decode([TweakOperation].self, forKey: .apply)
+        revert = try container.decode([TweakOperation].self, forKey: .revert)
+        parameters = try container.decodeIfPresent([TweakParameter].self, forKey: .parameters)
+        source = try container.decodeIfPresent(TweakSource.self, forKey: .source) ?? .builtIn
+    }
+    
+    init(id: String, name: String, description: String, category: String, platform: String, scope: String, riskLevel: String, supportedOS: [String]? = nil, apply: [TweakOperation], revert: [TweakOperation], parameters: [TweakParameter]? = nil, source: TweakSource = .builtIn) {
         self.id = id
         self.name = name
         self.description = description
@@ -25,6 +54,7 @@ struct Tweak: Identifiable, Hashable, Codable {
         self.apply = apply
         self.revert = revert
         self.parameters = parameters
+        self.source = source
     }
 }
 

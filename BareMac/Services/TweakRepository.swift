@@ -444,10 +444,24 @@ class LegacyTweakSource: TweakSourceProtocol {
     }
 }
 
-/// Loads tweaks from a remote URL.
+/// Loads tweaks from a remote URL with caching and validation.
 class CommunityTweakSource: TweakSourceProtocol {
     private let url: URL
     private let session: URLSession
+    
+    /// Cache directory for community tweaks
+    private static var cacheDirectory: URL? {
+        FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first?
+            .appendingPathComponent("BareMac")
+            .appendingPathComponent("CommunityTweaks")
+    }
+    
+    /// Cache file path based on URL hash
+    private var cacheFilePath: URL? {
+        guard let cacheDir = Self.cacheDirectory else { return nil }
+        let hash = url.absoluteString.hash
+        return cacheDir.appendingPathComponent("tweaks_\(abs(hash)).json")
+    }
     
     init(url: URL) {
         self.url = url
@@ -456,6 +470,28 @@ class CommunityTweakSource: TweakSourceProtocol {
         config.timeoutIntervalForRequest = 30.0
         config.waitsForConnectivity = true
         self.session = URLSession(configuration: config)
+    }
+    
+    /// Validates that the URL is a valid HTTPS URL pointing to a JSON file
+    static func validateURL(_ urlString: String) -> (isValid: Bool, error: String?) {
+        guard let url = URL(string: urlString) else {
+            return (false, "Invalid URL format")
+        }
+        
+        guard url.scheme == "https" else {
+            return (false, "URL must use HTTPS for security")
+        }
+        
+        guard url.host != nil else {
+            return (false, "URL must have a valid host")
+        }
+        
+        // Optional: Check for .json extension
+        if !url.pathExtension.isEmpty && url.pathExtension.lowercased() != "json" {
+            return (false, "URL should point to a JSON file")
+        }
+        
+        return (true, nil)
     }
     
     func loadTweaks() async throws -> [Tweak] {
@@ -478,13 +514,24 @@ class CommunityTweakSource: TweakSourceProtocol {
                 if let httpResponse = response as? HTTPURLResponse {
                     await MainActor.run { ConsoleLogger.shared.log("Status: \(httpResponse.statusCode)") }
                     if !(200...299).contains(httpResponse.statusCode) {
-                        throw URLError(.badServerResponse)
+                        throw TweakSourceError.networkError(URLError(.badServerResponse))
                     }
                 }
                 
-                let wrapper = try JSONDecoder().decode(TweakListWrapper.self, from: data)
-                await MainActor.run { ConsoleLogger.shared.log("Successfully loaded \(wrapper.tweaks.count) tweaks.") }
-                return wrapper.tweaks
+                let tweaks = try decodeTweaks(from: data)
+                
+                // Cache the successful response
+                await cacheData(data)
+                
+                await MainActor.run { ConsoleLogger.shared.log("Successfully loaded \(tweaks.count) community tweaks.") }
+                return tweaks
+                
+            } catch let decodingError as DecodingError {
+                await MainActor.run { 
+                    ConsoleLogger.shared.log("JSON parsing error: \(Self.friendlyDecodingError(decodingError))") 
+                }
+                // Don't retry on decoding errors - the data is bad
+                throw TweakSourceError.decodingFailed(decodingError)
                 
             } catch {
                 await MainActor.run { ConsoleLogger.shared.log("Fetch failed (attempt \(attempt)): \(error.localizedDescription)") }
@@ -492,7 +539,83 @@ class CommunityTweakSource: TweakSourceProtocol {
             }
         }
         
+        // All retries failed - try loading from cache
+        if let cachedTweaks = await loadFromCache() {
+            await MainActor.run { ConsoleLogger.shared.log("Using cached community tweaks (\(cachedTweaks.count) tweaks)") }
+            return cachedTweaks
+        }
+        
         throw TweakSourceError.networkError(lastError ?? URLError(.unknown))
+    }
+    
+    /// Decodes tweaks from JSON data and marks them as community source
+    private func decodeTweaks(from data: Data) throws -> [Tweak] {
+        let wrapper = try JSONDecoder().decode(TweakListWrapper.self, from: data)
+        
+        // Mark all tweaks as community source
+        return wrapper.tweaks.map { tweak in
+            var mutableTweak = tweak
+            mutableTweak.source = .community
+            return mutableTweak
+        }
+    }
+    
+    /// Caches data to disk
+    private func cacheData(_ data: Data) async {
+        guard let cacheDir = Self.cacheDirectory,
+              let cachePath = cacheFilePath else { return }
+        
+        do {
+            try FileManager.default.createDirectory(at: cacheDir, withIntermediateDirectories: true)
+            try data.write(to: cachePath)
+            await MainActor.run { ConsoleLogger.shared.log("Cached community tweaks to disk") }
+        } catch {
+            await MainActor.run { ConsoleLogger.shared.log("Failed to cache tweaks: \(error.localizedDescription)") }
+        }
+    }
+    
+    /// Loads tweaks from cache
+    private func loadFromCache() async -> [Tweak]? {
+        guard let cachePath = cacheFilePath,
+              FileManager.default.fileExists(atPath: cachePath.path) else {
+            return nil
+        }
+        
+        do {
+            let data = try Data(contentsOf: cachePath)
+            return try decodeTweaks(from: data)
+        } catch {
+            await MainActor.run { ConsoleLogger.shared.log("Failed to load cached tweaks: \(error.localizedDescription)") }
+            return nil
+        }
+    }
+    
+    /// Converts DecodingError to user-friendly message
+    static func friendlyDecodingError(_ error: DecodingError) -> String {
+        switch error {
+        case .keyNotFound(let key, let context):
+            return "Missing required field '\(key.stringValue)' at \(context.codingPath.map { $0.stringValue }.joined(separator: "."))"
+        case .typeMismatch(let type, let context):
+            return "Invalid type (expected \(type)) at \(context.codingPath.map { $0.stringValue }.joined(separator: "."))"
+        case .valueNotFound(let type, let context):
+            return "Missing value (expected \(type)) at \(context.codingPath.map { $0.stringValue }.joined(separator: "."))"
+        case .dataCorrupted(let context):
+            return "Corrupted data: \(context.debugDescription)"
+        @unknown default:
+            return error.localizedDescription
+        }
+    }
+    
+    /// Clears the cache for this URL
+    func clearCache() {
+        guard let cachePath = cacheFilePath else { return }
+        try? FileManager.default.removeItem(at: cachePath)
+    }
+    
+    /// Clears all community tweak caches
+    static func clearAllCaches() {
+        guard let cacheDir = cacheDirectory else { return }
+        try? FileManager.default.removeItem(at: cacheDir)
     }
 }
 

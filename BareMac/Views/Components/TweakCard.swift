@@ -49,6 +49,7 @@ struct TweakCard: View {
                             .foregroundStyle(.primary)
                         
                         RiskBadge(riskLevel: tweak.riskLevel)
+                        SourceBadge(source: tweak.source)
                     }
                     
                     Text(tweak.description)
@@ -184,6 +185,29 @@ struct RiskBadge: View {
         .background(color.opacity(0.15))
         .foregroundColor(color)
         .clipShape(Capsule())
+    }
+}
+
+// MARK: - Source Badge Component
+
+struct SourceBadge: View {
+    let source: TweakSource
+    
+    var body: some View {
+        if source == .community {
+            HStack(spacing: 3) {
+                Image(systemName: "globe")
+                    .font(.caption2)
+                Text("Community")
+                    .font(.caption2)
+                    .fontWeight(.medium)
+            }
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(Color.purple.opacity(0.15))
+            .foregroundColor(.purple)
+            .clipShape(Capsule())
+        }
     }
 }
 

@@ -66,10 +66,17 @@ class AppViewModel: ObservableObject {
     
     func loadCommunityTweaks() async {
         let defaultURL = "https://raw.githubusercontent.com/m3rcha/baremac-tweaks/3ade8c2086e18cad073cb05f3f12e74be33f04ee/tweaks.json"
-        let urlString = UserDefaults.standard.string(forKey: "communityRepoURL") ?? defaultURL
+        let urlString = UserDefaults.standard.string(forKey: Self.communityRepoURLKey) ?? defaultURL
+        
+        // Validate URL before attempting to load
+        let validation = CommunityTweakSource.validateURL(urlString)
+        if !validation.isValid {
+            ConsoleLogger.shared.log("Invalid community repo URL: \(validation.error ?? "Unknown error")")
+            return
+        }
         
         guard let url = URL(string: urlString) else {
-            print("Invalid community repo URL: \(urlString)")
+            ConsoleLogger.shared.log("Failed to parse community repo URL")
             return
         }
         
@@ -80,10 +87,15 @@ class AppViewModel: ObservableObject {
             await MainActor.run {
                 updateDisplayedTweaks()
             }
+        } catch TweakSourceError.decodingFailed(let error) {
+            ConsoleLogger.shared.log("Community tweaks JSON is malformed: \(error.localizedDescription)")
+        } catch TweakSourceError.networkError(let error) {
+            ConsoleLogger.shared.log("Network error loading community tweaks: \(error.localizedDescription)")
         } catch {
-            print("Failed to load community tweaks: \(error)")
+            ConsoleLogger.shared.log("Failed to load community tweaks: \(error.localizedDescription)")
         }
     }
+
     
     private func updateDisplayedTweaks() {
         var allTweaks = legacyTweaks
