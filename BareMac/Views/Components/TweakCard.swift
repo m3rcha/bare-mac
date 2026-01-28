@@ -8,6 +8,7 @@ struct TweakCard: View {
     
     @State private var isExpanded: Bool = false
     @State private var paramValues: [String: AnyCodable] = [:]
+    @State private var showRiskConfirmation: Bool = false
     
     init(tweak: Tweak, isActive: Bool, onToggle: @escaping () -> Void, onApplyWithParams: (([String: Any]) -> Void)? = nil) {
         self.tweak = tweak
@@ -25,6 +26,11 @@ struct TweakCard: View {
         }
     }
     
+    /// Whether this tweak requires confirmation before applying
+    private var requiresConfirmation: Bool {
+        tweak.riskLevel.lowercased() == "high" || tweak.riskLevel.lowercased() == "experimental"
+    }
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .top) {
@@ -37,9 +43,13 @@ struct TweakCard: View {
                     .clipShape(RoundedRectangle(cornerRadius: 8))
                 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(tweak.name)
-                        .font(.headline)
-                        .foregroundStyle(.primary)
+                    HStack(spacing: 6) {
+                        Text(tweak.name)
+                            .font(.headline)
+                            .foregroundStyle(.primary)
+                        
+                        RiskBadge(riskLevel: tweak.riskLevel)
+                    }
                     
                     Text(tweak.description)
                         .font(.subheadline)
@@ -66,7 +76,14 @@ struct TweakCard: View {
                     // Simple Tweak or Active Parameterized (Revert)
                     Toggle("", isOn: Binding(
                         get: { isActive },
-                        set: { _ in onToggle() }
+                        set: { newValue in
+                            // Only show confirmation when enabling a high-risk tweak
+                            if newValue && !isActive && requiresConfirmation {
+                                showRiskConfirmation = true
+                            } else {
+                                onToggle()
+                            }
+                        }
                     ))
                     .toggleStyle(.switch)
                     .controlSize(.mini)
@@ -87,13 +104,11 @@ struct TweakCard: View {
                 HStack {
                     Spacer()
                     Button("Apply Tweak") {
-                        // Convert AnyCodable dict to [String: Any]
-                        var rawParams: [String: Any] = [:]
-                        for (k, v) in paramValues {
-                            rawParams[k] = v.anyValue
+                        if requiresConfirmation {
+                            showRiskConfirmation = true
+                        } else {
+                            applyWithCurrentParams()
                         }
-                        onApplyWithParams?(rawParams)
-                        withAnimation { isExpanded = false }
                     }
                     .buttonStyle(.borderedProminent)
                     .disabled(isActive) // Should not happen if logic above is correct, but safe guard
@@ -107,6 +122,68 @@ struct TweakCard: View {
             RoundedRectangle(cornerRadius: 12)
                 .stroke(Color.primary.opacity(0.1), lineWidth: 1)
         )
+        .alert("High Risk Tweak", isPresented: $showRiskConfirmation) {
+            Button("Cancel", role: .cancel) { }
+            Button("Apply Anyway", role: .destructive) {
+                if tweak.parameters?.isEmpty == false && isExpanded {
+                    applyWithCurrentParams()
+                } else {
+                    onToggle()
+                }
+            }
+        } message: {
+            Text("'\(tweak.name)' is marked as \(tweak.riskLevel). This tweak may cause system instability or require a restart to revert. Are you sure you want to apply it?")
+        }
+    }
+    
+    private func applyWithCurrentParams() {
+        var rawParams: [String: Any] = [:]
+        for (k, v) in paramValues {
+            rawParams[k] = v.anyValue
+        }
+        onApplyWithParams?(rawParams)
+        withAnimation { isExpanded = false }
+    }
+}
+
+// MARK: - Risk Badge Component
+
+struct RiskBadge: View {
+    let riskLevel: String
+    
+    private var color: Color {
+        switch riskLevel.lowercased() {
+        case "low": return .green
+        case "medium": return .yellow
+        case "high": return .orange
+        case "experimental": return .red
+        default: return .gray
+        }
+    }
+    
+    private var icon: String {
+        switch riskLevel.lowercased() {
+        case "low": return "checkmark.shield"
+        case "medium": return "exclamationmark.shield"
+        case "high": return "exclamationmark.triangle"
+        case "experimental": return "flask"
+        default: return "questionmark.circle"
+        }
+    }
+    
+    var body: some View {
+        HStack(spacing: 3) {
+            Image(systemName: icon)
+                .font(.caption2)
+            Text(riskLevel.capitalized)
+                .font(.caption2)
+                .fontWeight(.medium)
+        }
+        .padding(.horizontal, 6)
+        .padding(.vertical, 2)
+        .background(color.opacity(0.15))
+        .foregroundColor(color)
+        .clipShape(Capsule())
     }
 }
 

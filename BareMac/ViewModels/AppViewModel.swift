@@ -3,10 +3,20 @@ import Combine
 
 @MainActor
 class AppViewModel: ObservableObject {
+    // MARK: - UserDefaults Keys
+    private static let activeTweaksKey = "activeTweakIDs"
+    private static let communityRepoURLKey = "communityRepoURL"
+    
+    // MARK: - Published Properties
     @Published var categories: [TweakCategory] = []
     @Published var selectedCategory: TweakCategory?
     @Published var searchText: String = ""
-    @Published var activeTweaks: Set<String> = [] // IDs of active tweaks
+    @Published var activeTweaks: Set<String> = [] {
+        didSet {
+            // Persist active tweaks whenever they change
+            saveActiveTweaks()
+        }
+    }
     @Published var showCommunityTweaks: Bool = false {
         didSet {
             if showCommunityTweaks {
@@ -20,13 +30,13 @@ class AppViewModel: ObservableObject {
     }
     
     private let legacySource = LegacyTweakSource()
-    // Placeholder URL - in a real app this would be the official repo
     
     private var legacyTweaks: [Tweak] = []
     private var communityTweaks: [Tweak] = []
     
     init() {
-        // Initial data load will happen in loadInitialData
+        // Restore persisted active tweaks
+        restoreActiveTweaks()
         
         // Migration: Fix incorrect default URL from previous builds if it exists
         // We also want to migrate from the "main" branch URL to this specific commit URL if desired, 
@@ -174,6 +184,24 @@ class AppViewModel: ObservableObject {
             }
         }
     }
+    
+    // MARK: - State Persistence
+    
+    /// Saves active tweak IDs to UserDefaults
+    private func saveActiveTweaks() {
+        let tweakIDs = Array(activeTweaks)
+        UserDefaults.standard.set(tweakIDs, forKey: Self.activeTweaksKey)
+        ConsoleLogger.shared.log("Saved \(tweakIDs.count) active tweak(s) to storage")
+    }
+    
+    /// Restores active tweak IDs from UserDefaults
+    private func restoreActiveTweaks() {
+        if let savedIDs = UserDefaults.standard.stringArray(forKey: Self.activeTweaksKey) {
+            // Temporarily disable the didSet observer during restoration
+            // by setting the backing storage directly isn't possible with @Published,
+            // so we'll just set it - the save will be a no-op since values are the same
+            activeTweaks = Set(savedIDs)
+            print("Restored \(savedIDs.count) active tweak(s) from storage")
+        }
+    }
 }
-
-
